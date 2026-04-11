@@ -1,0 +1,16 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+.env
+
+# dbt
+target/
+dbt_packages/
+logs/
+
+# Data (не зберігаємо сирі дані у git)
+data/
+
+# OS
+.DS_Store
