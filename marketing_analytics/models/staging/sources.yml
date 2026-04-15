@@ -1,0 +1,14 @@
+version: 2
+
+sources:
+  - name: raw
+    database: marketing_analytics
+    schema: public
+    tables:
+      - name: customers
+      - name: sessions
+      - name: orders
+      - name: ad_spend
+      - name: email_events
+
+

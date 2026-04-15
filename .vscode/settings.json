@@ -1,0 +1,9 @@
+{
+    "sqlfluff.linter.run": "onSave",
+    "sqlfluff.experimental.format.executeInTerminal": true,
+    "editor.formatOnSave": false,
+    "sqlfluff.linter.lintEntireProject": true,
+  /* Formatter */
+  "sqlfluff.format.arguments": ["--FIX-EVEN-UNPARSABLE"],
+  "sqlfluff.format.enabled": true,
+}
