@@ -1,0 +1,29 @@
+version: 2
+
+models:
+  - name: mart_customer_orders
+    description: "Customer orders summary with LTV and order metrics"
+    columns:
+      - name: customer_id
+        description: "Primary key"
+        data_tests:
+          - unique
+          - not_null
+
+  - name: mart_marketing_performance
+    description: "Marketing performance by channel and month with ROAS and CAC"
+    columns:
+      - name: channel
+        description: "Marketing channel"
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['google', 'facebook', 'instagram']
+      - name: month
+        description: "First day of the month"
+        data_tests:
+          - not_null
+      - name: roas
+        description: "Return on Ad Spend = total_revenue / total_spend"
+      - name: cac
+        description: "Customer Acquisition Cost = total_spend / total_orders"

@@ -1,0 +1,94 @@
+version: 2
+
+models:
+  - name: stg_customers
+    description: "Cleaned and renamed customers data from raw source"
+    columns:
+      - name: customer_id
+        description: "Primary key"
+        data_tests:
+          - unique
+          - not_null
+      - name: email
+        description: "Customer email in lowercase"
+        data_tests:
+          - unique
+          - not_null
+      - name: gender
+        description: "Customer gender in lowercase"
+        data_tests:
+          - accepted_values:
+              values: ['male', 'female']
+      - name: country
+        data_tests:
+          - accepted_values:
+              values: ['Ukraine', 'Poland', 'Germany', 'USA', 'UK']
+
+  - name: stg_orders
+    description: "Cleaned and renamed orders data from raw source"
+    columns:
+      - name: order_id
+        description: "Primary key"
+        data_tests:
+          - unique
+          - not_null
+      - name: customer_id
+        description: "Foreign key to stg_customers"
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_customers')
+              field: customer_id
+      - name: status
+        data_tests:
+          - accepted_values:
+              values: ['completed', 'pending', 'refunded', 'cancelled']
+
+  - name: stg_sessions
+    description: "Cleaned and renamed sessions data from raw source"
+    columns:
+      - name: session_id
+        description: "Primary key"
+        data_tests:
+          - unique
+          - not_null
+      - name: customer_id
+        description: "Foreign key to stg_customers"
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_customers')
+              field: customer_id
+      - name: channel
+        data_tests:
+          - accepted_values:
+              values: ['google', 'facebook', 'instagram', 'email', 'organic', 'direct']
+
+  - name: stg_ad_spend
+    description: "Cleaned ad spend data from raw source"
+    columns:
+      - name: date
+        description: "Date of ad spend"
+        data_tests:
+          - not_null
+      - name: channel
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ['google', 'facebook', 'instagram']
+
+  - name: stg_email_events
+    description: "Cleaned email events data from raw source"
+    columns:
+      - name: event_id
+        description: "Primary key"
+        data_tests:
+          - unique
+          - not_null
+      - name: customer_id
+        description: "Foreign key to stg_customers"
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_customers')
+              field: customer_id
