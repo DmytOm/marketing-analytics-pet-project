@@ -1,0 +1,81 @@
+name: dbt CI
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  dbt-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: marketing_analytics
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Create dbt profiles
+        run: |
+          mkdir -p ~/.dbt
+          cat > ~/.dbt/profiles.yml << EOF
+          marketing_analytics:
+            target: dev
+            outputs:
+              dev:
+                type: postgres
+                host: localhost
+                port: 5432
+                user: postgres
+                password: postgres
+                dbname: marketing_analytics
+                schema: public
+                threads: 4
+          EOF
+
+      - name: Create database tables
+        run: |
+          PGPASSWORD=postgres psql -h localhost -U postgres -d marketing_analytics -f scripts/create_tables.sql
+
+
+      - name: Generate mock data
+        run: python scripts/generate_data.py
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: marketing_analytics
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+
+      - name: Run dbt
+        run: |
+          cd marketing_analytics
+          dbt run
+
+      - name: Run dbt tests
+        run: |
+          cd marketing_analytics
+          dbt test
+
+
