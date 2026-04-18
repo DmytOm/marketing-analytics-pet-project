@@ -20,7 +20,7 @@ sessions_by_channel AS (
 
     SELECT
         channel,
-        DATE(DATE_TRUNC('month', started_at))    AS month,
+        {{ date_trunc_month('started_at') }}    AS month,
         COUNT(session_id)                  AS total_sessions
     FROM sessions
     GROUP BY 1, 2
@@ -31,7 +31,7 @@ orders_by_channel AS (
 
     SELECT
         sessions.channel,
-        DATE(DATE_TRUNC('month', orders.ordered_at))    AS month,
+        {{ date_trunc_month('orders.ordered_at')}}    AS month,
         COUNT(orders.order_id)                    AS total_orders,
         SUM(orders.amount)                        AS total_revenue
     FROM orders
@@ -45,7 +45,7 @@ ad_spend_by_channel AS (
 
     SELECT
         channel,
-        DATE(DATE_TRUNC('month', date))    AS month,
+        {{ date_trunc_month('date') }}    AS month,
         SUM(spend)                   AS total_spend,
         SUM(impressions)             AS total_impressions,
         SUM(clicks)                  AS total_clicks

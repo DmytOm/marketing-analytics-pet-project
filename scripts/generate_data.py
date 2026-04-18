@@ -6,6 +6,8 @@ import pandas as pd
 import psycopg2
 from dotenv import load_dotenv
 from faker import Faker
+from google.cloud import bigquery
+from google.oauth2 import service_account
 
 load_dotenv()
 
@@ -29,6 +31,18 @@ fake = Faker()
 Faker.seed(RANDOM_SEED)
 random.seed(RANDOM_SEED)
 
+
+def load_to_bigquery(df: pd.DataFrame, table_name: str, client: bigquery.Client, dataset: str) -> None:
+    table_id = f'{client.project}.{dataset}.{table_name}'
+
+    job_config = bigquery.LoadJobConfig(
+        write_disposition=bigquery.WriteDisposition.WRITE_TRUNCATE,
+    )
+
+    job = client.load_table_from_dataframe(df, table_id, job_config=job_config)
+    job.result()
+
+    print(f'✅ Loaded {len(df)} rows into {table_id}')
 
 def generate_customers(n: int) -> pd.DataFrame:
     countries = ['Ukraine', 'Poland', 'Germany', 'USA', 'UK']
@@ -163,8 +177,12 @@ def load_to_postgres(df: pd.DataFrame, table_name: str, conn) -> None:
     cursor.close()
 
 
+
 def main() -> None:
-    print('Starting date generation...')
+    import sys
+    target = sys.argv[1] if len(sys.argv) > 1 else 'postgres'
+
+    print(f'🚀 Starting data generation for target: {target}')
 
     customers_df = generate_customers(NUM_CUSTOMERS)
     sessions_df = generate_sessions(NUM_SESSIONS, customers_df['customer_id'].tolist())
@@ -172,20 +190,36 @@ def main() -> None:
     ad_spend_df = generate_ad_spend(START_DATE, END_DATE)
     email_events_df = generate_email_events(NUM_EMAIL_EVENTS, customers_df['customer_id'].tolist())
 
-    print('Data generation complete. Loading to PostgreSQL...')
+    print('✅ Data generation complete. Loading to database...')
 
-    conn = psycopg2.connect(**DB_CONFIG)
+    if target == 'bigquery':
+        credentials = service_account.Credentials.from_service_account_file(
+            os.getenv('GOOGLE_APPLICATION_CREDENTIALS'),
+        )
+        client = bigquery.Client(
+            project='marketing-analytics-dbt',
+            credentials=credentials,
+        )
+        dataset = 'marketing_analytics'
 
-    try:
-        load_to_postgres(customers_df, 'customers', conn)
-        load_to_postgres(sessions_df, 'sessions', conn)
-        load_to_postgres(orders_df, 'orders', conn)
-        load_to_postgres(ad_spend_df, 'ad_spend', conn)
-        load_to_postgres(email_events_df, 'email_events', conn)
+        load_to_bigquery(customers_df, 'customers', client, dataset)
+        load_to_bigquery(sessions_df, 'sessions', client, dataset)
+        load_to_bigquery(orders_df, 'orders', client, dataset)
+        load_to_bigquery(ad_spend_df, 'ad_spend', client, dataset)
+        load_to_bigquery(email_events_df, 'email_events', client, dataset)
 
-    finally:
-        conn.close()
-        print('Done! Connection closed.')
+    else:
+        conn = psycopg2.connect(**DB_CONFIG)
+        try:
+            load_to_postgres(customers_df, 'customers', conn)
+            load_to_postgres(sessions_df, 'sessions', conn)
+            load_to_postgres(orders_df, 'orders', conn)
+            load_to_postgres(ad_spend_df, 'ad_spend', conn)
+            load_to_postgres(email_events_df, 'email_events', conn)
+        finally:
+            conn.close()
+
+    print('🏁 Done!')
 
 
 if __name__ == '__main__':

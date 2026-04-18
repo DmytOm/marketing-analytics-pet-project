@@ -11,7 +11,7 @@ renamed AS (
         customer_id,
         campaign,
         sent_at,
-        sent_at::DATE AS sent_date,
+        CAST(sent_at as DATE) AS sent_date,
         is_opened,
         is_clicked
     FROM source

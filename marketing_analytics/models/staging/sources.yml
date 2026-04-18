@@ -2,13 +2,21 @@ version: 2
 
 sources:
   - name: raw
-    database: marketing_analytics
-    schema: public
+    database: |
+      {%- if target.type == 'bigquery' -%}
+      marketing-analytics-dbt
+      {%- else -%}
+      marketing_analytics
+      {%- endif -%}
+    schema: |
+      {%- if target.type == 'bigquery' -%}
+      marketing_analytics
+      {%- else -%}
+      public
+      {%- endif -%}
     tables:
       - name: customers
       - name: sessions
       - name: orders
       - name: ad_spend
       - name: email_events
-
-

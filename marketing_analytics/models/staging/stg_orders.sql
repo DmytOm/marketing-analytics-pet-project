@@ -13,7 +13,7 @@ renamed AS (
         status,
         amount,
         ordered_at,
-        ordered_at::DATE AS ordered_date
+        CAST(ordered_at AS DATE) AS ordered_date
     FROM source
 
 )

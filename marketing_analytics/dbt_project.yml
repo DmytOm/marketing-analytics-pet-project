@@ -17,8 +17,6 @@ clean-targets:
   - "dbt_packages"
 
 
-
-
 models:
   marketing_analytics:
     staging:

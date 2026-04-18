@@ -10,12 +10,12 @@ renamed AS (
         customer_id,
         first_name,
         last_name,
-        LOWER(email)          AS email,
+        LOWER(email)                    AS email,
         country,
         city,
         age,
-        LOWER(gender)         AS gender,
-        created_at::DATE      AS created_date,
+        LOWER(gender)                   AS gender,
+        CAST(created_at AS DATE)        AS created_date,
         created_at
     FROM source
 
