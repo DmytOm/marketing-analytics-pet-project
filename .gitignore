@@ -17,3 +17,11 @@ data/
 .idea/
 logs/
 service_account.json
+
+# Airflow
+airflow/airflow.db
+airflow/airflow.db-shm
+airflow/airflow.db-wal
+airflow/airflow.cfg
+airflow/simple_auth_manager_passwords.json.generated
+airflow/logs/
