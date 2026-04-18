@@ -65,12 +65,8 @@ final AS (
         sessions_by_channel.total_sessions,
         orders_by_channel.total_orders,
         orders_by_channel.total_revenue,
-        ROUND(
-            orders_by_channel.total_revenue / NULLIF(ad_spend_by_channel.total_spend, 0), 2
-        )                                                                AS roas,
-        ROUND(
-            ad_spend_by_channel.total_spend / NULLIF(orders_by_channel.total_orders, 0), 2
-        )                                                                AS cac
+        {{ safe_divide('orders_by_channel.total_revenue', 'ad_spend_by_channel.total_spend') }} as roas,
+        {{ safe_divide('ad_spend_by_channel.total_spend', 'orders_by_channel.total_orders') }} as cac
     FROM ad_spend_by_channel
     LEFT JOIN sessions_by_channel
         ON ad_spend_by_channel.channel = sessions_by_channel.channel
