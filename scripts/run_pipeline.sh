@@ -1,21 +1,31 @@
 #!/bin/bash
 
-# Exit immediately if any command fails
+# $HOME автоматично містить /Users/dmytriiomelchenko на твоєму Mac
+# і /Users/інше_ім'я на комп'ютері колеги
+PROJECT_DIR="$HOME/marketing_analytics_pet_project_ae"
+DBT_DIR="$PROJECT_DIR/marketing_analytics"
+PYTHON="$PROJECT_DIR/venv/bin/python"
+NOTIFY="$PROJECT_DIR/scripts/notify_slack.py"
+
 set -e
 
 echo "🚀 Starting pipeline: $(date)"
 
-# Activate virtual environment
-source /Users/dmytriiomelchenko/marketing_analytics_pet_project_ae/venv/bin/activate
+source "$PROJECT_DIR/venv/bin/activate"
 
-# Navigate to dbt project
-cd /Users/dmytriiomelchenko/marketing_analytics_pet_project_ae/marketing_analytics
+cd "$DBT_DIR"
 
-# Run dbt
 echo "▶️  Running dbt models..."
-dbt run
+if ! dbt run; then
+    $PYTHON $NOTIFY failure "dbt run failed. Check logs for details."
+    exit 1
+fi
 
 echo "🧪 Running dbt tests..."
-dbt test
+if ! dbt test; then
+    $PYTHON $NOTIFY failure "dbt test failed. Check logs for details."
+    exit 1
+fi
 
+$PYTHON $NOTIFY success
 echo "✅ Pipeline completed successfully: $(date)"
